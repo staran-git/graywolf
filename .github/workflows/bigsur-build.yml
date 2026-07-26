@@ -18,20 +18,22 @@ jobs:
           CGO_ENABLED: 1
           MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
-          # Fix the version tag in the root module file
           sed -i '' 's/^go 1\.26.*/go 1.25/g' go.mod
           go mod tidy
           
-          # Navigate into the actual source code folder and compile
+          # Build the main interface binary
           cd cmd/graywolf
           go build -ldflags="-s -w" -o ../../graywolf .
+          
+          # Build the missing modem helper binary
+          cd ../graywolf-modem
+          go build -ldflags="-s -w" -o ../../graywolf-modem .
 
-      - name: Compress Binary
-        run: tar -czvf graywolf-bigsur.tar.gz graywolf
+      - name: Compress Both Binaries Together
+        run: tar -czvf graywolf-bigsur-package.tar.gz graywolf graywolf-modem
 
-      - name: Upload Finished Zip to GitHub
+      - name: Upload Single Package to GitHub
         uses: actions/upload-artifact@v4
         with:
-          name: graywolf-bigsur-executable
-          path: graywolf-bigsur.tar.gz
-
+          name: graywolf-complete-bundle
+          path: graywolf-bigsur-package.tar.gz
