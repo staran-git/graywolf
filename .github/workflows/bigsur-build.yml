@@ -10,7 +10,6 @@ jobs:
 
       - name: Install Protoc (Protobuf Compiler)
         run: |
-          # Uses the cloud runner's native brew package manager to fetch the missing dependency
           brew install protobuf
 
       - name: Set up Rust Toolchain
@@ -21,8 +20,10 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
           cargo build --release
-          cp target/release/graywolf .
-          cp target/release/graywolf-modem .
+          
+          # Dynamically finds the compiled binaries anywhere inside target/release/ and copies them out
+          find target/release -type f -name "graywolf" -exec cp {} . \;
+          find target/release -type f -name "graywolf-modem" -exec cp {} . \;
 
       - name: Compress Both Binaries Together
         run: tar -czvf graywolf-bigsur-package.tar.gz graywolf graywolf-modem
