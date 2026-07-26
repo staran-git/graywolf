@@ -9,9 +9,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Protoc (Protobuf Compiler)
-        uses: arduino/actions-protobuf-setup@v1
-        with:
-          version: '25.x' # Injects the necessary proto compiler into the cloud server
+        run: |
+          # Uses the cloud runner's native brew package manager to fetch the missing dependency
+          brew install protobuf
 
       - name: Set up Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
