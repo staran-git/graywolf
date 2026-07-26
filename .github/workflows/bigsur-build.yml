@@ -20,28 +20,23 @@ jobs:
         with:
           go-version: '1.24'
 
-      - name: Compile Graywolf for Big Sur
+      - name: Compile Graywolf Suite for Big Sur
         env:
           CGO_ENABLED: 1
           MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
-          # 1. Initialize our single folder to receive the finished files
-          mkdir -p output_bundle
-
-          # 2. Compile the Rust background modem from its exact root folder path
-          cd graywolf-modem
-          cargo build --release
-          cp target/release/graywolf-modem ../output_bundle/
-          
-          # 3. Step back to the root directory
-          cd ..
-          
-          # 4. Patch the version tag in the module file so the Go compiler passes
+          # 1. Patch the version tag in the module file so Go 1.24 runs it smoothly
           sed -i '' 's/^go 1\.26.*/go 1.25/g' go.mod
           go mod tidy
           
-          # 5. Compile the main application dashboard layout from its Go folder path
+          # 2. Create the standalone staging directory
+          mkdir -p output_bundle
+          
+          # 3. Use the Go compiler to build the dashboard application
           go build -ldflags="-s -w" -o ./output_bundle/graywolf ./cmd/graywolf
+          
+          # 4. Use the Go compiler to build the helper service (this triggers the Rust bindings)
+          go build -ldflags="-s -w" -o ./output_bundle/graywolf-modem ./cmd/graywolf-modem
 
       - name: Compress Both Binaries Together
         run: |
