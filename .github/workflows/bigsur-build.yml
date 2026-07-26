@@ -25,18 +25,22 @@ jobs:
           CGO_ENABLED: 1
           MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
-          # 1. Patch the version tag in the module file so Go 1.24 runs it smoothly
+          # 1. Compile the underlying Rust dependencies (This creates the modem binary)
+          cargo build --release
+          
+          # 2. Patch the module declarations to bypass Go compiler validation crashes
           sed -i '' 's/^go 1\.26.*/go 1.25/g' go.mod
           go mod tidy
           
-          # 2. Create the standalone staging directory
+          # 3. Create a staging directory to organize our outputs cleanly
           mkdir -p output_bundle
           
-          # 3. Use the Go compiler to build the dashboard application
+          # 4. Use Go to build the main dashboard user interface executable
           go build -ldflags="-s -w" -o ./output_bundle/graywolf ./cmd/graywolf
           
-          # 4. Use the Go compiler to build the helper service (this triggers the Rust bindings)
-          go build -ldflags="-s -w" -o ./output_bundle/graywolf-modem ./cmd/graywolf-modem
+          # 5. Extract the finished modem executable built by Cargo in Step 1
+          # The Rust package drops its compiled application right inside target/release/
+          cp target/release/graywolf_modem ./output_bundle/graywolf-modem
 
       - name: Compress Both Binaries Together
         run: |
