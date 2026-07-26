@@ -21,9 +21,9 @@ jobs:
         run: |
           cargo build --release
           
-          # Dynamically finds the compiled binaries anywhere inside target/release/ and copies them out
-          find target/release -type f -name "graywolf" -exec cp {} . \;
-          find target/release -type f -name "graywolf-modem" -exec cp {} . \;
+          # Target the two generated binary files exactly from their compiled location
+          cp target/release/graywolf .
+          cp target/release/graywolf_modem ./graywolf-modem
 
       - name: Compress Both Binaries Together
         run: tar -czvf graywolf-bigsur-package.tar.gz graywolf graywolf-modem
