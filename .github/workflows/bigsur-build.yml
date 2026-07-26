@@ -21,11 +21,11 @@ jobs:
           sed -i '' 's/^go 1\.26.*/go 1.25/g' go.mod
           go mod tidy
           
-          # Build the main interface binary
+          # Build the main dashboard component
           cd cmd/graywolf
           go build -ldflags="-s -w" -o ../../graywolf .
           
-          # Build the missing modem helper binary
+          # Navigate correctly to the adjacent modem helper directory and build
           cd ../graywolf-modem
           go build -ldflags="-s -w" -o ../../graywolf-modem .
 
@@ -37,3 +37,4 @@ jobs:
         with:
           name: graywolf-complete-bundle
           path: graywolf-bigsur-package.tar.gz
+
