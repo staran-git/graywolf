@@ -22,7 +22,7 @@ jobs:
 
       - name: Compile Graywolf Suite for Big Sur
         env:
-          CGO_ENABLED: 1
+          CGO_ENABLED: 0
           MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
           # 1. Compile the underlying Rust dependencies (This creates the modem binary)
@@ -36,7 +36,7 @@ jobs:
           mkdir -p output_bundle
           
           # 4. Use Go to build the main dashboard user interface executable
-          go build -tags netgo -ldflags="-s -w" -o ./output_bundle/graywolf ./cmd/graywolf
+          go build -tags "netgo x509omitsystemroots" -ldflags="-s -w" -o ./output_bundle/graywolf ./cmd/graywolf
           
           # 5. Extract the finished modem executable built by Cargo in Step 1
           # The Rust package drops its compiled application right inside target/release/
