@@ -21,13 +21,11 @@ jobs:
           sed -i '' 's/^go 1\.26.*/go 1.25/g' go.mod
           go mod tidy
           
-          # Build the main dashboard component
-          cd cmd/graywolf
-          go build -ldflags="-s -w" -o ../../graywolf .
+          # Compile the main application component directly by pointing to its exact module entry path
+          go build -ldflags="-s -w" -o graywolf ./cmd/graywolf
           
-          # Navigate correctly to the adjacent modem helper directory and build
-          cd ../graywolf-modem
-          go build -ldflags="-s -w" -o ../../graywolf-modem .
+          # Compile the modem helper engine directly from its module entry path
+          go build -ldflags="-s -w" -o graywolf-modem ./cmd/graywolf-modem
 
       - name: Compress Both Binaries Together
         run: tar -czvf graywolf-bigsur-package.tar.gz graywolf graywolf-modem
@@ -37,4 +35,3 @@ jobs:
         with:
           name: graywolf-complete-bundle
           path: graywolf-bigsur-package.tar.gz
-
