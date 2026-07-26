@@ -21,12 +21,18 @@ jobs:
         run: |
           cargo build --release
           
-          # Target the two generated binary files exactly from their compiled location
-          cp target/release/graywolf .
-          cp target/release/graywolf_modem ./graywolf-modem
+          # Creates a clean staging directory to hold the binaries
+          mkdir -p output_bundle
+          
+          # Locates the exact compiled executable files within target/release/ and extracts them
+          find target/release -maxdepth 3 -type f -name "graywolf" -exec cp {} ./output_bundle/ \;
+          find target/release -maxdepth 3 -type f -name "graywolf_modem" -exec cp {} ./output_bundle/graywolf-modem \;
 
       - name: Compress Both Binaries Together
-        run: tar -czvf graywolf-bigsur-package.tar.gz graywolf graywolf-modem
+        run: |
+          # Bundles only the clean executables inside our directory
+          cd output_bundle
+          tar -czvf ../graywolf-bigsur-package.tar.gz graywolf graywolf-modem
 
       - name: Upload Single Package to GitHub
         uses: actions/upload-artifact@v4
