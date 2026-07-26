@@ -3,29 +3,24 @@ on: [workflow_dispatch]
 
 jobs:
   build:
-    runs-on: macos-15-intel
+    runs-on: macos-15-intel # Uses an Intel-compatible runner for backward compatibility
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Set up Correct Go Language Toolchain
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25.12'
+      - name: Set up Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Fix go.mod and Compile for Big Sur
+      - name: Compile Graywolf Binaries for Big Sur
         env:
-          CGO_ENABLED: 1
-          MACOSX_DEPLOYMENT_TARGET: "11.0"
+          MACOSX_DEPLOYMENT_TARGET: "11.0" # Forces backward compatibility with macOS 11 Big Sur
         run: |
-          sed -i '' 's/^go 1\.26.*/go 1.25/g' go.mod
-          go mod tidy
-          
-          # Compile the main application component directly by pointing to its exact module entry path
-          go build -ldflags="-s -w" -o graywolf ./cmd/graywolf
-          
-          # Compile the modem helper engine directly from its module entry path
-          go build -ldflags="-s -w" -o graywolf-modem ./cmd/graywolf-modem
+          # Compiles the entire Rust workspace (both graywolf and graywolf-modem) in release mode
+          cargo build --release
+
+          # Moves the compiled binaries out to the root folder for easy packaging
+          cp target/release/graywolf .
+          cp target/release/graywolf-modem .
 
       - name: Compress Both Binaries Together
         run: tar -czvf graywolf-bigsur-package.tar.gz graywolf graywolf-modem
@@ -35,3 +30,4 @@ jobs:
         with:
           name: graywolf-complete-bundle
           path: graywolf-bigsur-package.tar.gz
+
