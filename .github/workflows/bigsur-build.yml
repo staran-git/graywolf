@@ -36,7 +36,7 @@ jobs:
           mkdir -p output_bundle
           
           # 4. Use Go to build the main dashboard user interface executable
-          go build -ldflags="-s -w" -o ./output_bundle/graywolf ./cmd/graywolf
+          go build -tags x509omitysystemroots -ldflags="-s -w" -o ./output_bundle/graywolf ./cmd/graywolf
           
           # 5. Extract the finished modem executable built by Cargo in Step 1
           # The Rust package drops its compiled application right inside target/release/
