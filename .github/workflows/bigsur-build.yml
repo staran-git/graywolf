@@ -38,7 +38,7 @@ jobs:
           # 4. Compile the main dashboard component (Go)
           go build -ldflags="-s -w" -o ./output_bundle/graywolf ./cmd/graywolf
           
-          # 5. Compile the background modem engine using the corrected path (Go)
+          # 5. Compile the background modem helper engine (Go)
           go build -ldflags="-s -w" -o ./output_bundle/graywolf-modem ./cmd/graywolf-modem
 
       - name: Compress Both Binaries Together
@@ -51,4 +51,3 @@ jobs:
         with:
           name: graywolf-complete-bundle
           path: graywolf-bigsur-package.tar.gz
-
