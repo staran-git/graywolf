@@ -3,7 +3,7 @@ on: [workflow_dispatch]
 
 jobs:
   build:
-    runs-on: macos-15-intel # Uses an Intel-compatible runner for Big Sur compatibility
+    runs-on: macos-15-intel
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -23,22 +23,22 @@ jobs:
       - name: Compile Graywolf for Big Sur
         env:
           CGO_ENABLED: 1
-          MACOSX_DEPLOYMENT_TARGET: "11.0" # Forces backward compatibility with macOS 11 Big Sur
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
-          # 1. First, compile the underlying Rust demodulator workspace dependencies
+          # 1. Compile the underlying Rust dependencies
           cargo build --release
           
-          # 2. Fix the version tag in the root module file for the Go compiler
-          sed -i '' 's/^go 1\.26.*/go 1.23/g' go.mod
+          # 2. Fix the version tag in the root module file
+          sed -i '' 's/^go 1\.26.*/go 1.25/g' go.mod
           go mod tidy
           
-          # 3. Create a clean staging directory to hold the output files
+          # 3. Create a clean staging directory
           mkdir -p output_bundle
           
-          # 4. Compile the main application dashboard (Go)
+          # 4. Compile the main dashboard component (Go)
           go build -ldflags="-s -w" -o ./output_bundle/graywolf ./cmd/graywolf
           
-          # 5. Compile the background modem helper engine (Go)
+          # 5. Compile the background modem engine using the corrected path (Go)
           go build -ldflags="-s -w" -o ./output_bundle/graywolf-modem ./cmd/graywolf-modem
 
       - name: Compress Both Binaries Together
@@ -51,3 +51,4 @@ jobs:
         with:
           name: graywolf-complete-bundle
           path: graywolf-bigsur-package.tar.gz
+
