@@ -3,22 +3,24 @@ on: [workflow_dispatch]
 
 jobs:
   build:
-    runs-on: macos-15-intel # Uses an Intel-compatible runner for backward compatibility
+    runs-on: macos-15-intel
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+
+      - name: Install Protoc (Protobuf Compiler)
+        uses: arduino/actions-protobuf-setup@v1
+        with:
+          version: '25.x' # Injects the necessary proto compiler into the cloud server
 
       - name: Set up Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
 
       - name: Compile Graywolf Binaries for Big Sur
         env:
-          MACOSX_DEPLOYMENT_TARGET: "11.0" # Forces backward compatibility with macOS 11 Big Sur
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
-          # Compiles the entire Rust workspace (both graywolf and graywolf-modem) in release mode
           cargo build --release
-
-          # Moves the compiled binaries out to the root folder for easy packaging
           cp target/release/graywolf .
           cp target/release/graywolf-modem .
 
@@ -30,4 +32,3 @@ jobs:
         with:
           name: graywolf-complete-bundle
           path: graywolf-bigsur-package.tar.gz
-
