@@ -3,7 +3,7 @@ on: [workflow_dispatch] # Allows you to trigger the build manually
 
 jobs:
   build:
-    runs-on: macos-13 # Uses a legacy Intel Mac runner that supports Go compilation
+    runs-on: macos-15-intel # Uses a legacy Intel Mac runner that supports Go compilation
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
