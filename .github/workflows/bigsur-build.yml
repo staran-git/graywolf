@@ -1,0 +1,30 @@
+name: Build for Big Sur
+on: [workflow_dispatch] # Allows you to trigger the build manually
+
+jobs:
+  build:
+    runs-on: macos-13 # Uses a legacy Intel Mac runner that supports Go compilation
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go Language
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.20' # Uses a legacy Go release compatible with older macOS deployments
+
+      - name: Compile Graywolf Binary for Big Sur
+        env:
+          CGO_ENABLED: 1
+          MACOSX_DEPLOYMENT_TARGET: "11.0" # Forces backward-compatibility with Big Sur
+        run: |
+          go build -ldflags="-s -w" -o graywolf main.go
+
+      - name: Compress Binary
+        run: tar -czvf graywolf-bigsur.tar.gz graywolf
+
+      - name: Upload Finished Zip to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: graywolf-bigsur-executable
+          path: graywolf-bigsur.tar.gz
