@@ -3,7 +3,7 @@ on: [workflow_dispatch]
 
 jobs:
   build:
-    runs-on: macos-15-intel
+    runs-on: macos-15-intel # Uses an Intel-compatible runner for Big Sur compatibility
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -15,22 +15,34 @@ jobs:
       - name: Set up Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Compile Graywolf Binaries for Big Sur
+      - name: Set up Go Language Toolchain
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Compile Graywolf for Big Sur
         env:
-          MACOSX_DEPLOYMENT_TARGET: "11.0"
+          CGO_ENABLED: 1
+          MACOSX_DEPLOYMENT_TARGET: "11.0" # Forces backward compatibility with macOS 11 Big Sur
         run: |
+          # 1. First, compile the underlying Rust demodulator workspace dependencies
           cargo build --release
           
-          # Creates a clean staging directory to hold the binaries
+          # 2. Fix the version tag in the root module file for the Go compiler
+          sed -i '' 's/^go 1\.26.*/go 1.23/g' go.mod
+          go mod tidy
+          
+          # 3. Create a clean staging directory to hold the output files
           mkdir -p output_bundle
           
-          # Locates the exact compiled executable files within target/release/ and extracts them
-          find target/release -maxdepth 3 -type f -name "graywolf" -exec cp {} ./output_bundle/ \;
-          find target/release -maxdepth 3 -type f -name "graywolf_modem" -exec cp {} ./output_bundle/graywolf-modem \;
+          # 4. Compile the main application dashboard (Go)
+          go build -ldflags="-s -w" -o ./output_bundle/graywolf ./cmd/graywolf
+          
+          # 5. Compile the background modem helper engine (Go)
+          go build -ldflags="-s -w" -o ./output_bundle/graywolf-modem ./cmd/graywolf-modem
 
       - name: Compress Both Binaries Together
         run: |
-          # Bundles only the clean executables inside our directory
           cd output_bundle
           tar -czvf ../graywolf-bigsur-package.tar.gz graywolf graywolf-modem
 
