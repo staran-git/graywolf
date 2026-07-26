@@ -3,7 +3,7 @@ on: [workflow_dispatch]
 
 jobs:
   build:
-    runs-on: macos-15-intel # Uses an Intel-compatible runner to build for older Macs
+    runs-on: macos-15-intel
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -18,9 +18,13 @@ jobs:
           CGO_ENABLED: 1
           MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
+          # Fix the version tag in the root module file
           sed -i '' 's/^go 1\.26.*/go 1.25/g' go.mod
           go mod tidy
-          go build -ldflags="-s -w" -o graywolf .
+          
+          # Navigate into the actual source code folder and compile
+          cd cmd/graywolf
+          go build -ldflags="-s -w" -o ../../graywolf .
 
       - name: Compress Binary
         run: tar -czvf graywolf-bigsur.tar.gz graywolf
@@ -30,3 +34,4 @@ jobs:
         with:
           name: graywolf-bigsur-executable
           path: graywolf-bigsur.tar.gz
+
