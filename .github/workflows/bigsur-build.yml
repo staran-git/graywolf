@@ -3,25 +3,24 @@ on: [workflow_dispatch]
 
 jobs:
   build:
-    runs-on: macos-15-intel
+    runs-on: macos-15-intel # Uses an Intel-compatible runner to build for older Macs
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Set up Modern Go Language
+      - name: Set up Correct Go Language Toolchain
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24' # Uses a modernized compiler toolchain that understands patch semantics
+          go-version: '1.25.12'
 
       - name: Fix go.mod and Compile for Big Sur
         env:
           CGO_ENABLED: 1
-          MACOSX_DEPLOYMENT_TARGET: "11.0" # Keeps binary backward-compatible with macOS 11 Big Sur
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
-          # Dynamically rewrites the go.mod version statement to prevent parsing crashes
-          sed -i '' 's/^go 1\.26.*/go 1.23/g' go.mod
+          sed -i '' 's/^go 1\.26.*/go 1.25/g' go.mod
           go mod tidy
-          go build -ldflags="-s -w" -o graywolf main.go
+          go build -ldflags="-s -w" -o graywolf .
 
       - name: Compress Binary
         run: tar -czvf graywolf-bigsur.tar.gz graywolf
