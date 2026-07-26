@@ -25,21 +25,23 @@ jobs:
           CGO_ENABLED: 1
           MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
-          # 1. Compile the underlying Rust dependencies
+          # 1. Initialize our single folder to receive the finished files
+          mkdir -p output_bundle
+
+          # 2. Compile the Rust background modem from its exact root folder path
+          cd graywolf-modem
           cargo build --release
+          cp target/release/graywolf-modem ../output_bundle/
           
-          # 2. Fix the version tag in the root module file
+          # 3. Step back to the root directory
+          cd ..
+          
+          # 4. Patch the version tag in the module file so the Go compiler passes
           sed -i '' 's/^go 1\.26.*/go 1.25/g' go.mod
           go mod tidy
           
-          # 3. Create a clean staging directory
-          mkdir -p output_bundle
-          
-          # 4. Compile the main dashboard component (Go)
+          # 5. Compile the main application dashboard layout from its Go folder path
           go build -ldflags="-s -w" -o ./output_bundle/graywolf ./cmd/graywolf
-          
-          # 5. Compile the background modem helper engine (Go)
-          go build -ldflags="-s -w" -o ./output_bundle/graywolf-modem ./cmd/graywolf-modem
 
       - name: Compress Both Binaries Together
         run: |
