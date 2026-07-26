@@ -1,23 +1,26 @@
 name: Build for Big Sur
-on: [workflow_dispatch] # Allows you to trigger the build manually
+on: [workflow_dispatch]
 
 jobs:
   build:
-    runs-on: macos-15-intel # Uses a legacy Intel Mac runner that supports Go compilation
+    runs-on: macos-15-intel
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Set up Go Language
+      - name: Set up Modern Go Language
         uses: actions/setup-go@v5
         with:
-          go-version: '1.20' # Uses a legacy Go release compatible with older macOS deployments
+          go-version: '1.24' # Uses a modernized compiler toolchain that understands patch semantics
 
-      - name: Compile Graywolf Binary for Big Sur
+      - name: Fix go.mod and Compile for Big Sur
         env:
           CGO_ENABLED: 1
-          MACOSX_DEPLOYMENT_TARGET: "11.0" # Forces backward-compatibility with Big Sur
+          MACOSX_DEPLOYMENT_TARGET: "11.0" # Keeps binary backward-compatible with macOS 11 Big Sur
         run: |
+          # Dynamically rewrites the go.mod version statement to prevent parsing crashes
+          sed -i '' 's/^go 1\.26.*/go 1.23/g' go.mod
+          go mod tidy
           go build -ldflags="-s -w" -o graywolf main.go
 
       - name: Compress Binary
