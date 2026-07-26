@@ -40,7 +40,7 @@ jobs:
           
           # 5. Extract the finished modem executable built by Cargo in Step 1
           # The Rust package drops its compiled application right inside target/release/
-          cp target/release/graywolf_modem ./output_bundle/graywolf-modem
+          cp target/release/graywolf-modem ./output_bundle/graywolf-modem
 
       - name: Compress Both Binaries Together
         run: |
